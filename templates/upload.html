@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <link href="/static/bootstrap-3.3.4-dist/css/bootstrap.min.css"
+  rel="stylesheet">
+     <link href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css" rel="stylesheet">
+  <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+     <script src="/static/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+     <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+     <style>
+         .container{
+           width: 1490px;
+         }
+         .btn:hover, .btn:focus, .btn:active, .btn:visited {
+            outline: none;
+            box-shadow: none !important;
+        }
+     </style>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header text-center">
+    <h3 class="text-muted">Upload Files.</h3>
+   </div>
+
+
+    <form class="form-horizontal" role="form" id="uploadForm" enctype="multipart/form-data" >
+      <div class="form-group">
+        <label for="firstname" class="col-sm-2 control-label">Balance:</label>
+        <div class="col-sm-10">
+            <input type="file" name="file" value="" class="imgFile form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="lastname" class="col-sm-2 control-label">Transactions:</label>
+        <div class="col-sm-10">
+          <input type="file" name="file2" value="" class="imgFile form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastname" class="col-sm-2 control-label">swift:</label>
+        <div class="col-sm-10">
+          <input type="file" name="file3" value="" class="imgFile form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <input type="button" class="btn btn-primary" value="Start" id="upFileBtn">
+        </div>
+      </div>
+    </form>
+
+
+    <div class="container">
+       <div class="row">
+          <div class="col-md-12" ><h3 class="text-muted" style="color:black">balance:<span id="balance"></span><span style="margin-left:50px"></span> <span id="trannum"></span></h3></div>
+       </div>
+       <div class="row">
+            <div class="col-md-6">
+                <table id="table1" class="table table-hover">
+                  <caption>Balance</caption>
+                  <thead>
+                    <tr>
+                      <th>Account</th>
+                      <th>Currency</th>
+                      <th>Balance</th>
+                      <th>AsOfDateTS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+            </div>
+           <div class="col-md-6 pre-scrollable ">
+                <table  id="table2" class="table table-hover">
+                  <caption>Transactions</caption>
+                  <thead>
+                    <tr>
+                      <th>Account</th>
+                      <th>ValueDate</th>
+                      <th>Currency</th>
+                      <th>CreditDebit</th>
+                      <th>Amount</th>
+                      <th>TransactionReference</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+              </table>
+           </div>
+       </div>
+       <hr style ='border:2px solid black'>
+        <div class="row">
+            <div class="col-md-6">
+                <table id="table3" class="table table-hover">
+                  <caption>swift_sample_msg-bals</caption>
+                  <thead>
+                    <tr>
+                      <th>Cd</th>
+                      <th>Ccy</th>
+                        <th>Amt</th>
+                      <th>CdtDbtInd</th>
+                      <th>Dt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+            </div>
+             <div class="col-md-6">
+                <table id="table4" class="table table-hover">
+                  <caption>swift_sample_msg-ntrys</caption>
+                  <thead>
+                    <tr>
+                        <th>NbOfTxs</th>
+                      <th>Ccy</th>
+                      <th>Amt</th>
+                        <th>CdtDbtInd</th>
+                        <th>Cd</th>
+                      <th>DtTm</th>
+                      <th>Dt</th>
+                        <th>MsgId</th>
+                        <th>PmtInfId</th>
+                        <th>EndToEndId</th>
+                        <th>UETR</th>
+                         <th>TtlAmt/Amt</th>
+
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+
+  </div>
+ <script>
+ //final tables with color to show the money breaks 
+function runcolor(){
+    //color list
+    var corlist = ['#fdf5e6','#fof8ff','#d2fbfc','#d3d3d3','#b8fcd6','#e0faaa','#c4f5c4','#f5e0ae','#c5ebe7']
+    // rows of 4th table (bottom right)
+    var tb4trs = $("#table4 tr")
+    // rows of 2nd table (top right)
+    var trs = $("#table2 tr")
+    var str = ""
+    var errcount = 0
+    var errnum = 0
+    var errcount2 = 0
+    for (var i=1;i<tb4trs.length;i++){
+        $(tb4trs[i]).css("background-color",corlist[i])
+        var num = $(tb4trs[i]).find("td")[0].innerText * 1
+        var count = 1
+        for (var y=1;y<trs.length;y++){
+            //value
+            if ($(tb4trs[i]).find("td")[2].innerText== $(trs.get(y)).find("td")[4].innerText
+                && $(tb4trs[i]).find("td")[1].innerText== $(trs.get(y)).find("td")[2].innerText
+                ){
+                if (count > num){
+                    //background color red for unmatched records in xml 
+                    $(trs.get(y)).css("background-color","red")
+                    errcount = errcount + 1
+                    errnum = $(tb4trs[i]).find("td")[2].innerText *1 +errnum
+                }else{
+                    $(trs.get(y)).css("background-color",corlist[i])
+                    count = count + 1
+                }
+            }
+        }
+        //less records 
+        if (count < num ){
+            errcount2 = errcount2 + (num - count)
+            errnum = errnum - ($(tb4trs[i]).find("td")[2].innerText * 1 * (num - count))
+        }
+    }
+    $("#trannum").text((errcount - errcount2 )+" Client Money Breaks ("+errnum+")")
+}
+$('#upFileBtn').click(function (e) {
+
+        var formData = new FormData($('#uploadForm')[0]);
+        var resdata
+        //destroy
+        $("#table2").bootstrapTable('destroy');
+        $("#table1").bootstrapTable('destroy');
+        $("#table3").bootstrapTable('destroy');
+        $("#table4").bootstrapTable('destroy');
+        //table2
+        $('#table2').bootstrapTable({
+        ajax : function (result) {
+            $.ajax({
+                 url:"/upload",
+                 type: "POST",
+                 data: formData,
+                 async: true,
+                 cashe: false,
+                 contentType:false,
+                 processData:false,
+                 success:function (returndata) {
+                    if (returndata.status*1 == 0){
+                        resdata = returndata
+                        //alert('upload success')
+                        result.success({
+                            row : resdata.trancsv
+                        });
+                        $('#table2').bootstrapTable('load', resdata.trancsv);
+                         //table1
+                         $('#table1').bootstrapTable({
+                            ajax : function (result) {
+                                 $.ajax({
+                                     url:"/table",
+                                     type: "POST",
+                                     async: true,
+                                     cashe: false,
+                                     contentType:false,
+                                     processData:false,
+                                     success:function (returndata) {
+                                        //alert(resdata.trancsv)
+                                        result.success({
+                                            row : resdata.balcsv
+                                        });
+                                        $('#table1').bootstrapTable('load', resdata.balcsv);
+
+                                 　　},
+                                 　　error: function (returndata) {
+                                 　　　　　alert("error！")
+                                 　　}
+                                 })
+                            }
+                        })
+                         //table3
+                        $('#table3').bootstrapTable({
+                            ajax : function (result) {
+                                 $.ajax({
+                                     url:"/table",
+                                     type: "POST",
+                                     async: true,
+                                     cashe: false,
+                                     contentType:false,
+                                     processData:false,
+                                     success:function (returndata) {
+                                        //alert(resdata.trancsv)
+                                        //show balance 
+                                        $("#balance").text(resdata.ballist[resdata.ballist.length-1][2]+"(swift)|"+ resdata.balcsv[resdata.balcsv.length-1][2])+"(Ledger)"
+                                        result.success({
+                                            row : resdata.ballist
+                                        });
+                                        $('#table3').bootstrapTable('load', resdata.ballist);
+
+                                 　　},
+                                 　　error: function (returndata) {
+                                 　　　　　alert("error！")
+                                 　　}
+                                 })
+                            }
+                        })
+
+                       //table4
+                      $('#table4').bootstrapTable({
+                            ajax : function (result) {
+                                 $.ajax({
+                                     url:"/table",
+                                     type: "POST",
+                                     async: true,
+                                     cashe: false,
+                                     contentType:false,
+                                     processData:false,
+                                     success:function (returndata) {
+                                        //alert(resdata.trancsv)
+                                        result.success({
+                                            row : resdata.ntryslist
+                                        });
+                                        $('#table4').bootstrapTable('load', resdata.ntryslist);
+                                        //alert('success')
+                                        runcolor()
+                                 　　},
+                                 　　error: function (returndata) {
+                                 　　　　　alert("error！")
+                                 　　}
+                                 })
+                            }
+                        })
+
+
+
+                    }else{
+                        alert('upload error')
+                    }
+
+             　　},
+             　　error: function (returndata) {
+             　　　　　alert("error！")
+             　　}
+             })
+        },
+
+    })
+
+
+
+
+});
+</script>
+</body>
+
+</html>
