@@ -52,7 +52,7 @@ def table():
 
 def data(filename1,filename2,filename3):
     '''Data Processing and Storage'''
-    engine = create_engine('mysql+pymysql://root:Wxn918273645-@localhost:3306/info?charset=utf8') #root:mysql passcode@localhost
+    engine = create_engine('mysql+pymysql://root:PASSCODE@localhost:3306/info?charset=utf8') #root:mysql passcode@localhost
     conn = engine.connect()
     #LedgerBalance.csv
     df = pd.read_csv("templates/files/"+filename1)
